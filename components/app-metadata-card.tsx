@@ -1,58 +1,149 @@
-"use client"
+"use client";
 
-import { Badge } from "@/components/ui/badge"
+import type { AppMetadata } from "@/types/app-data";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, ExternalLink, Info, Star, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export function AppMetadataCard() {
-  return (
-    <div className="space-y-4">
-      <div className="flex items-start gap-4">
-        <div className="h-16 w-16 rounded-lg bg-primary/10 flex items-center justify-center">
-          <span className="text-2xl font-bold text-primary">A</span>
-        </div>
-        <div>
-          <h3 className="font-semibold">My Productivity App</h3>
-          <p className="text-sm text-muted-foreground">Task management & organization</p>
-        </div>
-      </div>
+interface AppMetadataCardProps {
+	app: AppMetadata;
+}
 
-      <div className="space-y-3">
-        <div>
-          <p className="text-sm font-medium mb-1">App Store Category</p>
-          <div className="flex gap-2">
-            <Badge variant="outline">Productivity</Badge>
-            <Badge variant="outline">Business</Badge>
-          </div>
-        </div>
+export function AppMetadataCard({ app }: AppMetadataCardProps) {
+	return (
+		<div className='space-y-4'>
+			<div className='flex items-start gap-4'>
+				<div className='h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden'>
+					{app.iconUrl ? (
+						<img
+							src={app.iconUrl || "/placeholder.svg?height=80&width=80"}
+							alt={app.name}
+							className='h-full w-full object-cover'
+						/>
+					) : (
+						<span className='text-2xl font-bold text-primary'>
+							{app.name.charAt(0)}
+						</span>
+					)}
+				</div>
+				<div className='flex-1'>
+					<h3 className='font-semibold text-lg'>{app.name}</h3>
+					<p className='text-sm text-muted-foreground'>{app.subtitle}</p>
+					<div className='flex items-center gap-2 mt-1'>
+						<Badge
+							variant='outline'
+							className='h-5 px-1.5'
+						>
+							iOS
+						</Badge>
+						<span className='text-xs text-muted-foreground'>
+							{app.category}
+						</span>
+					</div>
+				</div>
+			</div>
 
-        <div>
-          <p className="text-sm font-medium mb-1">Current Version</p>
-          <p className="text-sm">2.4.1 (Updated 2 weeks ago)</p>
-        </div>
+			<div className='grid grid-cols-2 gap-4'>
+				<div className='space-y-3'>
+					<div className='flex items-center gap-2 text-sm'>
+						<User className='h-4 w-4 text-muted-foreground' />
+						<span className='text-muted-foreground'>Developer:</span>
+						<span className='font-medium truncate'>
+							{app.developer || "Unknown"}
+						</span>
+					</div>
 
-        <div>
-          <p className="text-sm font-medium mb-1">Ratings</p>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">4.7</span>
-            <div className="flex">
-              {"★★★★★".split("").map((star, i) => (
-                <span key={i} className={i < 4 ? "text-yellow-500" : "text-muted"}>
-                  {star}
-                </span>
-              ))}
-            </div>
-            <span className="text-xs text-muted-foreground">(1,204 reviews)</span>
-          </div>
-        </div>
+					<div className='flex items-center gap-2 text-sm'>
+						<Star className='h-4 w-4 text-yellow-500' />
+						<span className='text-muted-foreground'>Rating:</span>
+						<span className='font-medium'>
+							{app.rating?.toFixed(1) || "N/A"}
+						</span>
+						<span className='text-xs text-muted-foreground'>
+							({app.reviewCount?.toLocaleString() || 0} reviews)
+						</span>
+					</div>
 
-        <div>
-          <p className="text-sm font-medium mb-1">Description Preview</p>
-          <p className="text-xs text-muted-foreground line-clamp-3">
-            Boost your productivity with our intuitive task management app. Organize projects, track time, collaborate
-            with your team, and achieve your goals faster. Features include customizable to-do lists, reminders, project
-            boards, and detailed analytics.
-          </p>
-        </div>
-      </div>
-    </div>
-  )
+					<div className='flex items-center gap-2 text-sm'>
+						<Calendar className='h-4 w-4 text-muted-foreground' />
+						<span className='text-muted-foreground'>Updated:</span>
+						<span className='font-medium'>
+							{app.lastUpdated
+								? new Date(app.lastUpdated).toLocaleDateString()
+								: "Unknown"}
+						</span>
+					</div>
+
+					<div className='flex items-center gap-2 text-sm'>
+						<Info className='h-4 w-4 text-muted-foreground' />
+						<span className='text-muted-foreground'>Version:</span>
+						<span className='font-medium'>{app.version || "Unknown"}</span>
+						<span className='text-xs text-muted-foreground'>
+							({app.size || "Unknown"})
+						</span>
+					</div>
+				</div>
+
+				<div className='space-y-3'>
+					<div className='text-sm'>
+						<div className='font-medium mb-1'>App Store Link</div>
+						<Button
+							variant='outline'
+							size='sm'
+							className='w-full text-xs h-8 gap-1'
+							onClick={() => window.open(app.appStoreUrl, "_blank")}
+						>
+							<ExternalLink className='h-3.5 w-3.5' />
+							View on App Store
+						</Button>
+					</div>
+
+					<div className='text-sm'>
+						<div className='font-medium mb-1'>Price</div>
+						<div className='text-sm'>{app.price || "Free"}</div>
+					</div>
+
+					<div className='text-sm'>
+						<div className='font-medium mb-1'>Metadata Status</div>
+						<Badge
+							variant='outline'
+							className='bg-yellow-50'
+						>
+							Ready for Optimization
+						</Badge>
+					</div>
+				</div>
+			</div>
+
+			<div>
+				<p className='text-sm font-medium mb-1'>Description Preview</p>
+				<p className='text-xs text-muted-foreground line-clamp-3'>
+					{app.description}
+				</p>
+			</div>
+
+			{app.screenshotUrls && app.screenshotUrls.length > 0 && (
+				<div>
+					<p className='text-sm font-medium mb-1'>App Store Screenshots</p>
+					<div className='flex gap-2 overflow-x-auto pb-2'>
+						{app.screenshotUrls.slice(0, 3).map((screenshot, index) => (
+							<img
+								key={index}
+								src={screenshot || "/placeholder.svg?height=96&width=48"}
+								alt={`Screenshot ${index + 1}`}
+								className='h-24 w-auto rounded-md object-cover border'
+							/>
+						))}
+						{app.screenshotUrls.length > 3 && (
+							<div className='flex h-24 w-16 items-center justify-center rounded-md bg-muted'>
+								<span className='text-sm text-muted-foreground'>
+									+{app.screenshotUrls.length - 3}
+								</span>
+							</div>
+						)}
+					</div>
+				</div>
+			)}
+		</div>
+	);
 }

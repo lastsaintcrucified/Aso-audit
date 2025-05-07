@@ -2,22 +2,30 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
-const data = [
-  { date: "Jan", score: 45 },
-  { date: "Feb", score: 52 },
-  { date: "Mar", score: 49 },
-  { date: "Apr", score: 58 },
-  { date: "May", score: 63 },
-  { date: "Jun", score: 68 },
-  { date: "Jul", score: 72 },
-]
+interface VisibilityScoreChartProps {
+  data?: Array<{
+    date: string
+    score: number
+  }>
+}
 
-export function VisibilityScoreChart() {
+export function VisibilityScoreChart({ data }: VisibilityScoreChartProps) {
+  // Default data if none is provided
+  const chartData = data || [
+    { date: "Jan", score: 45 },
+    { date: "Feb", score: 52 },
+    { date: "Mar", score: 49 },
+    { date: "Apr", score: 58 },
+    { date: "May", score: 63 },
+    { date: "Jun", score: 68 },
+    { date: "Jul", score: 72 },
+  ]
+
   return (
     <div className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
-          data={data}
+          data={chartData}
           margin={{
             top: 5,
             right: 10,

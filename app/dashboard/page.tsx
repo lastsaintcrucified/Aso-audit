@@ -1,197 +1,181 @@
 /* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Plus, Smartphone, Trash2 } from "lucide-react";
+
+import { useAuth } from "@/contexts/auth-context";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
-	CardDescription,
+	CardFooter,
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { VisibilityScoreChart } from "@/components/visibility-score-chart";
-import { KeywordRankingsTable } from "@/components/keyword-rankings-table";
-import { RecommendationsList } from "@/components/recommendations-list";
-import { AppMetadataCard } from "@/components/app-metadata-card";
-import { useEffect } from "react";
-import { useAuth } from "@/lib/auth-context";
-import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import { LoadingSpinner } from "@/components/loading-spinner";
+import { EmptyState } from "@/components/empty-state";
+import { getUserApps, deleteApp } from "@/lib/firestore";
+import type { AppMetadata } from "@/types/app-data";
 
 export default function DashboardPage() {
-	const { user, loading: authLoading } = useAuth();
+	const { toast } = useToast();
+	const { user } = useAuth();
 	const router = useRouter();
+	const [isLoading, setIsLoading] = useState(true);
+	const [apps, setApps] = useState<AppMetadata[]>([]);
+	const [deletingAppId, setDeletingAppId] = useState<string | null>(null);
 
 	useEffect(() => {
-		if (!authLoading && !user) {
-			router.push("/login");
+		async function fetchData() {
+			if (!user) return;
+
+			try {
+				setIsLoading(true);
+				const userApps = await getUserApps(user.uid);
+				setApps(userApps);
+			} catch (error: any) {
+				toast({
+					title: "Error loading apps",
+					description: error.message || "Failed to load your apps",
+					variant: "destructive",
+				});
+			} finally {
+				setIsLoading(false);
+			}
 		}
-	}, [user, authLoading, router]);
+
+		fetchData();
+	}, [user]);
+
+	const handleAddNewApp = () => {
+		router.push("/dashboard/new-app");
+	};
+
+	const handleViewApp = (appId: string) => {
+		router.push(`/dashboard/apps/${appId}`);
+	};
+
+	const handleDeleteApp = async (appId: string) => {
+		try {
+			setDeletingAppId(appId);
+			await deleteApp(appId);
+			setApps(apps.filter((app) => app.id !== appId));
+			toast({
+				title: "App deleted",
+				description: "The app has been successfully deleted",
+			});
+		} catch (error: any) {
+			toast({
+				title: "Error deleting app",
+				description: error.message || "Failed to delete the app",
+				variant: "destructive",
+			});
+		} finally {
+			setDeletingAppId(null);
+		}
+	};
+
+	if (isLoading) {
+		return (
+			<div className='flex h-full items-center justify-center min-h-[400px]'>
+				<LoadingSpinner className='h-8 w-8' />
+			</div>
+		);
+	}
+
+	if (apps.length === 0) {
+		return (
+			<div className='flex flex-col gap-6'>
+				<div className='flex items-center justify-between'>
+					<div>
+						<h1 className='text-3xl font-bold tracking-tight'>My iOS Apps</h1>
+						<p className='text-muted-foreground'>
+							Optimize your app's metadata for better App Store rankings
+						</p>
+					</div>
+					<Button onClick={handleAddNewApp}>
+						<Plus className='mr-2 h-4 w-4' />
+						Add New App
+					</Button>
+				</div>
+
+				<EmptyState
+					title='No apps added yet'
+					description='Add your first iOS app to start optimizing its metadata.'
+					action={
+						<Button onClick={handleAddNewApp}>
+							<Plus className='mr-2 h-4 w-4' />
+							Add New App
+						</Button>
+					}
+					icon={<Smartphone className='h-10 w-10 text-muted-foreground' />}
+				/>
+			</div>
+		);
+	}
 
 	return (
 		<div className='flex flex-col gap-6'>
-			<div>
-				<h1 className='text-3xl font-bold tracking-tight'>Dashboard</h1>
-				<p className='text-muted-foreground'>
-					Overview of your app's ASO performance
-				</p>
+			<div className='flex items-center justify-between'>
+				<div>
+					<h1 className='text-3xl font-bold tracking-tight'>My iOS Apps</h1>
+					<p className='text-muted-foreground'>
+						Optimize your app's metadata for better App Store rankings
+					</p>
+				</div>
+				<Button onClick={handleAddNewApp}>
+					<Plus className='mr-2 h-4 w-4' />
+					Add New App
+				</Button>
 			</div>
 
-			<Tabs
-				defaultValue='overview'
-				className='space-y-4'
-			>
-				<TabsList>
-					<TabsTrigger value='overview'>Overview</TabsTrigger>
-					<TabsTrigger value='keywords'>Keywords</TabsTrigger>
-					<TabsTrigger value='competitors'>Competitors</TabsTrigger>
-					<TabsTrigger value='recommendations'>Recommendations</TabsTrigger>
-				</TabsList>
-				<TabsContent
-					value='overview'
-					className='space-y-4'
-				>
-					<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-						<Card>
-							<CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-								<CardTitle className='text-sm font-medium'>
-									Visibility Score
-								</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<div className='text-2xl font-bold'>72/100</div>
-								<p className='text-xs text-muted-foreground'>
-									+4% from last month
-								</p>
-							</CardContent>
-						</Card>
-						<Card>
-							<CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-								<CardTitle className='text-sm font-medium'>
-									Keyword Rankings
-								</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<div className='text-2xl font-bold'>24</div>
-								<p className='text-xs text-muted-foreground'>
-									3 new rankings this week
-								</p>
-							</CardContent>
-						</Card>
-						<Card>
-							<CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-								<CardTitle className='text-sm font-medium'>
-									App Rating
-								</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<div className='text-2xl font-bold'>4.7</div>
-								<p className='text-xs text-muted-foreground'>
-									Based on 1,204 reviews
-								</p>
-							</CardContent>
-						</Card>
-						<Card>
-							<CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-								<CardTitle className='text-sm font-medium'>
-									Competitor Score
-								</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<div className='text-2xl font-bold'>68/100</div>
-								<p className='text-xs text-muted-foreground'>
-									You're ahead by 4 points
-								</p>
-							</CardContent>
-						</Card>
-					</div>
-					<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-7'>
-						<Card className='lg:col-span-4'>
-							<CardHeader>
-								<CardTitle>Visibility Score Trend</CardTitle>
-								<CardDescription>
-									Your app's visibility score over time
-								</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<VisibilityScoreChart />
-							</CardContent>
-						</Card>
-						<Card className='lg:col-span-3'>
-							<CardHeader>
-								<CardTitle>App Metadata</CardTitle>
-								<CardDescription>Current metadata for your app</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<AppMetadataCard />
-							</CardContent>
-						</Card>
-					</div>
-				</TabsContent>
-				<TabsContent
-					value='keywords'
-					className='space-y-4'
-				>
-					<Card>
-						<CardHeader>
-							<CardTitle>Keyword Rankings</CardTitle>
-							<CardDescription>
-								Your app's current keyword rankings
-							</CardDescription>
+			<div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>
+				{apps.map((app) => (
+					<Card
+						key={app.id}
+						className='overflow-hidden'
+					>
+						<CardHeader className='pb-2'>
+							<CardTitle className='truncate'>{app.name}</CardTitle>
 						</CardHeader>
-						<CardContent>
-							<KeywordRankingsTable />
-						</CardContent>
-					</Card>
-				</TabsContent>
-				<TabsContent
-					value='competitors'
-					className='space-y-4'
-				>
-					<Card>
-						<CardHeader>
-							<CardTitle>Competitor Analysis</CardTitle>
-							<CardDescription>
-								Compare your app with competitors
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<p className='text-sm text-muted-foreground mb-4'>
-								Add up to 3 competitors to compare your app's performance
+						<CardContent className='pb-2'>
+							<p className='text-sm text-muted-foreground mb-2 line-clamp-1'>
+								{app.subtitle}
 							</p>
-							<div className='flex flex-col gap-4'>
-								<div className='rounded-md border p-4'>
-									<p className='text-sm font-medium mb-2'>
-										No competitors added yet
-									</p>
-									<p className='text-sm text-muted-foreground mb-4'>
-										Add competitor apps to see how your app compares
-									</p>
-									<div className='flex justify-start'>
-										<button className='text-sm text-primary underline underline-offset-4'>
-											+ Add competitor
-										</button>
-									</div>
-								</div>
-							</div>
+							<p className='text-sm text-muted-foreground line-clamp-3'>
+								{app.description}
+							</p>
 						</CardContent>
+						<CardFooter className='flex justify-between pt-2'>
+							<Button
+								variant='outline'
+								size='sm'
+								onClick={() => handleViewApp(app.id)}
+							>
+								View Details
+							</Button>
+							<Button
+								variant='ghost'
+								size='icon'
+								className='text-destructive hover:text-destructive'
+								onClick={() => handleDeleteApp(app.id)}
+								disabled={deletingAppId === app.id}
+							>
+								{deletingAppId === app.id ? (
+									<LoadingSpinner className='h-4 w-4' />
+								) : (
+									<Trash2 className='h-4 w-4' />
+								)}
+								<span className='sr-only'>Delete</span>
+							</Button>
+						</CardFooter>
 					</Card>
-				</TabsContent>
-				<TabsContent
-					value='recommendations'
-					className='space-y-4'
-				>
-					<Card>
-						<CardHeader>
-							<CardTitle>AI-Powered Recommendations</CardTitle>
-							<CardDescription>
-								Actionable insights to improve your app's ASO
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<RecommendationsList />
-						</CardContent>
-					</Card>
-				</TabsContent>
-			</Tabs>
+				))}
+			</div>
 		</div>
 	);
 }

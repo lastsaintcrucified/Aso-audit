@@ -28,7 +28,45 @@ export default function KeywordsPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
-						<KeywordRankingsTable />
+						<KeywordRankingsTable
+							keywords={[
+								{
+									keyword: "productivity app",
+									rank: 12,
+									change: 3,
+									volume: "High",
+									difficulty: "Medium",
+								},
+								{
+									keyword: "task manager",
+									rank: 8,
+									change: -2,
+									volume: "High",
+									difficulty: "High",
+								},
+								{
+									keyword: "to-do list",
+									rank: 15,
+									change: 5,
+									volume: "Medium",
+									difficulty: "Medium",
+								},
+								{
+									keyword: "project management",
+									rank: 24,
+									change: 0,
+									volume: "High",
+									difficulty: "High",
+								},
+								{
+									keyword: "time tracking",
+									rank: 18,
+									change: 2,
+									volume: "Medium",
+									difficulty: "Low",
+								},
+							]}
+						/>
 					</CardContent>
 				</Card>
 

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BarChart3, Eye, EyeOff } from "lucide-react";
 
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -19,29 +20,29 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function LoginPage() {
 	const router = useRouter();
-
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
+	const { toast } = useToast();
+	const { login } = useAuth();
 	const [isLoading, setIsLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
 
-	const handleEmailLogin = async (e: React.FormEvent) => {
+	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsLoading(true);
 
 		try {
-			await signInWithEmailAndPassword(auth, email, password);
+			await login(email, password);
 			router.push("/dashboard");
 		} catch (error: any) {
 			toast({
 				title: "Login failed",
-				description: error.message,
+				description:
+					error.message || "Please check your credentials and try again.",
 				variant: "destructive",
 			});
 		} finally {
@@ -66,7 +67,7 @@ export default function LoginPage() {
 							Enter your email and password to sign in to your account
 						</CardDescription>
 					</CardHeader>
-					<form onSubmit={handleEmailLogin}>
+					<form onSubmit={handleLogin}>
 						<CardContent className='grid gap-4'>
 							<div className='grid gap-2'>
 								<Label htmlFor='email'>Email</Label>
@@ -84,7 +85,7 @@ export default function LoginPage() {
 									<Label htmlFor='password'>Password</Label>
 									<Link
 										href='/forgot-password'
-										className='text-sm text-primary hover:underline'
+										className='text-sm text-muted-foreground underline underline-offset-4 hover:text-primary'
 									>
 										Forgot password?
 									</Link>
@@ -93,6 +94,7 @@ export default function LoginPage() {
 									<Input
 										id='password'
 										type={showPassword ? "text" : "password"}
+										placeholder='••••••••'
 										value={password}
 										onChange={(e) => setPassword(e.target.value)}
 										required

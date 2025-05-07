@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BarChart3, Eye, EyeOff } from "lucide-react";
 
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -19,47 +20,35 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast";
-import { auth } from "@/lib/firebase";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { createUserProfile } from "@/lib/auth-context";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function SignupPage() {
 	const router = useRouter();
-
+	const { toast } = useToast();
+	const { signUp } = useAuth();
+	const [isLoading, setIsLoading] = useState(false);
+	const [showPassword, setShowPassword] = useState(false);
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
-	const [showPassword, setShowPassword] = useState(false);
 
-	const handleEmailRegister = async (e: React.FormEvent) => {
+	const handleSignup = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsLoading(true);
 
 		try {
-			const userCredential = await createUserWithEmailAndPassword(
-				auth,
-				email,
-				password
-			);
-			const user = userCredential.user;
-
-			// Update profile with display name
-			await updateProfile(user, { displayName: name });
-
-			// Create user profile in Firestore
-			await createUserProfile(user.uid, {
-				displayName: name,
-				email: user.email || email,
-				photoURL: user.photoURL ?? undefined,
+			await signUp(email, password);
+			// Here you'd typically store the user's name in Firestore or another database
+			// For now, we'll just redirect to dashboard
+			toast({
+				title: "Account created",
+				description: "Your account has been created successfully.",
 			});
-
 			router.push("/dashboard");
 		} catch (error: any) {
 			toast({
-				title: "Registration failed",
-				description: error.message,
+				title: "Signup failed",
+				description: error.message || "Failed to create your account.",
 				variant: "destructive",
 			});
 		} finally {
@@ -84,7 +73,7 @@ export default function SignupPage() {
 							Enter your email below to create your account
 						</CardDescription>
 					</CardHeader>
-					<form onSubmit={handleEmailRegister}>
+					<form onSubmit={handleSignup}>
 						<CardContent className='grid gap-4'>
 							<div className='grid gap-2'>
 								<Label htmlFor='name'>Name</Label>
@@ -113,9 +102,11 @@ export default function SignupPage() {
 									<Input
 										id='password'
 										type={showPassword ? "text" : "password"}
+										placeholder='••••••••'
 										value={password}
 										onChange={(e) => setPassword(e.target.value)}
 										required
+										minLength={6}
 									/>
 									<Button
 										type='button'
@@ -142,7 +133,7 @@ export default function SignupPage() {
 								type='submit'
 								disabled={isLoading}
 							>
-								{isLoading ? "Creating account..." : "Create account"}
+								{isLoading ? "Signing up..." : "Create account"}
 							</Button>
 						</CardFooter>
 					</form>
