@@ -91,6 +91,14 @@ export async function deleteApp(id: string) {
 	try {
 		const appRef = doc(db, "apps", id);
 		await deleteDoc(appRef);
+		const optimizationsQuery = query(
+			collection(db, "optimizations"),
+			where("appId", "==", id)
+		);
+
+		const optimizationsSnap = await getDocs(optimizationsQuery);
+		const deletePromises = optimizationsSnap.docs.map((doc) => deleteDoc(doc.ref));
+		await Promise.all(deletePromises);
 		return true;
 	} catch (error) {
 		console.error("Error deleting app:", error);

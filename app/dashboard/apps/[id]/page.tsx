@@ -2,9 +2,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { Copy, FileText, RefreshCw } from "lucide-react";
+import { Copy, FileText, RefreshCw, ArrowRight } from "lucide-react";
 
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export default function AppDetailPage({
 }: {
 	params: Promise<{ id: string }>;
 }) {
-	const { id } = use(params); // Await the promise to get the ID
+	const { id } = use(params);
 	const { toast } = useToast();
 	const { user } = useAuth();
 	const router = useRouter();
@@ -73,7 +73,7 @@ export default function AppDetailPage({
 		}
 
 		fetchAppData();
-	}, [user, params, router]);
+	}, [user, id, router]);
 
 	const handleOptimize = async () => {
 		if (!app) return;
@@ -120,6 +120,7 @@ export default function AppDetailPage({
 				description:
 					"Your metadata optimization report has been generated successfully",
 			});
+			router.push(`/dashboard/reports`);
 
 			// In a real app, you would open the report URL
 			// window.open(result.downloadUrl, "_blank")
@@ -163,6 +164,14 @@ export default function AppDetailPage({
 					<p className='text-muted-foreground'>App Store • {app.category}</p>
 				</div>
 				<div className='flex gap-2'>
+					<Button
+						variant='outline'
+						onClick={() => router.push(`/dashboard/compare?appId=${app.id}`)}
+						className='gap-1'
+					>
+						<ArrowRight className='h-4 w-4 mr-2' />
+						Compare with Competitor
+					</Button>
 					<Button
 						variant='outline'
 						onClick={handleGenerateReport}
