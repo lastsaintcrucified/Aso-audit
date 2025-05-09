@@ -210,7 +210,7 @@ export default function CompareAppsPage() {
 	}
 
 	return (
-		<div className='flex flex-col gap-6'>
+		<div className='w-1/2 flex flex-col gap-6'>
 			<div className='flex items-center justify-between'>
 				<div>
 					<h1 className='text-3xl font-bold tracking-tight'>Compare Apps</h1>
@@ -230,7 +230,7 @@ export default function CompareAppsPage() {
 								compare with
 							</CardDescription>
 						</CardHeader>
-						<CardContent className='space-y-4'>
+						<CardContent className='space-y-4 mt-4'>
 							<div className='space-y-2'>
 								<Label htmlFor='competitor-url'>Competitor App Store URL</Label>
 								<div className='flex gap-2'>
@@ -254,12 +254,12 @@ export default function CompareAppsPage() {
 									</Button>
 								</div>
 								<p className='text-xs text-muted-foreground'>
-									Example:
+									<strong>Example</strong>:
 									https://apps.apple.com/us/app/todoist-to-do-list-planner/id572688855
 								</p>
 							</div>
 						</CardContent>
-						<CardFooter>
+						<CardFooter className='mt-4'>
 							<p className='text-sm text-muted-foreground'>
 								Your app: <span className='font-medium'>{mainApp.name}</span>
 							</p>

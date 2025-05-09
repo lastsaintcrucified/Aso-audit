@@ -112,7 +112,7 @@ export default function NewAppPage() {
 	};
 
 	return (
-		<div className='flex flex-col gap-6'>
+		<div className='w-1/2 flex flex-col gap-6'>
 			<div>
 				<h1 className='text-3xl font-bold tracking-tight'>Add New iOS App</h1>
 				<p className='text-muted-foreground'>
@@ -130,7 +130,7 @@ export default function NewAppPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className='space-y-4'>
-						<div className='space-y-2'>
+						<div className='space-y-2 mt-4'>
 							<Label htmlFor='app-url'>App Store URL</Label>
 							<div className='flex gap-2'>
 								<Input
@@ -155,7 +155,8 @@ export default function NewAppPage() {
 								</Button>
 							</div>
 							<p className='text-xs text-muted-foreground'>
-								Example: https://apps.apple.com/us/app/instagram/id389801252
+								<strong>Example</strong>:
+								https://apps.apple.com/us/app/instagram/id389801252
 							</p>
 						</div>
 					</CardContent>
